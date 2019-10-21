@@ -5,16 +5,17 @@ import android.os.Bundle;
 import com.xuhuawei.myfragmentapp.R;
 import com.xuhuawei.myfragmentapp.base.BaseUIFragment;
 
-public class MainFragment extends BaseUIFragment {
-
+public class TabFragment1 extends BaseUIFragment {
     @Override
     protected void init(Bundle savedInstanceState) {
 
     }
+
     @Override
     protected int getContentViewId() {
-        return R.layout.fragment_main;
+        return R.layout.fragment_tab_1;
     }
+
     @Override
     protected void findViewByIds() {
 

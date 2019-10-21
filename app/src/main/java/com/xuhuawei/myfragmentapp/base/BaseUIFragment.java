@@ -1,14 +1,30 @@
-package com.xuhuawei.myfragmentapp.fragment;
+package com.xuhuawei.myfragmentapp.base;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.xuhuawei.myfragmentapp.App;
+import com.xuhuawei.myfragmentapp.utils.ToastUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+
 public abstract class BaseUIFragment extends BaseFragment{
+    public BaseUIFragment mParentFragment;
+
+
     /**
      * 初始化的工作都放在这里
      *
@@ -52,10 +68,10 @@ public abstract class BaseUIFragment extends BaseFragment{
     private List<Toast> cacheToastList;
 
     private int requestId=-1;
-
+    protected  View view;
     @Override
-    public void onCreateImpl(Bundle savedInstanceState) {
-        super.onCreateImpl(savedInstanceState);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         cacheToastList = new ArrayList<>();
         Bundle bundle=getArguments();
         if(bundle!=null){
@@ -65,15 +81,16 @@ public abstract class BaseUIFragment extends BaseFragment{
         init(savedInstanceState);
     }
 
+    @Nullable
     @Override
-    public View onCreateViewImpl(Bundle savedInstanceState) {
-        View view = View.inflate(getActivity(), getContentViewId(), null);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+         view = View.inflate(getActivity(), getContentViewId(), null);
         return view;
     }
 
     @Override
-    public void onViewCreatedImpl(View view, Bundle savedInstanceState) {
-        super.onViewCreatedImpl(view, savedInstanceState);
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         findViewByIds();
         registerMoudles();
         initObservable = Observable.just("").subscribeOn(Schedulers.io())
@@ -82,7 +99,6 @@ public abstract class BaseUIFragment extends BaseFragment{
                 .doOnError(new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        LogUtil.v("xhw","throwable content:"+throwable.getLocalizedMessage());
                     }
                 })
                 .subscribe(new Action1<String>() {
@@ -96,8 +112,8 @@ public abstract class BaseUIFragment extends BaseFragment{
     }
 
     @Override
-    public void onDestroyViewImpl() {
-        super.onDestroyViewImpl();
+    public void onDestroyView() {
+        super.onDestroyView();
         if (initObservable != null && !initObservable.isUnsubscribed()) {
             initObservable.unsubscribe();
         }
@@ -115,7 +131,7 @@ public abstract class BaseUIFragment extends BaseFragment{
      * @return View
      */
     protected View findViewById(int resId) {
-        return getContentView().findViewById(resId);
+        return view.findViewById(resId);
     }
 
     /**
@@ -151,38 +167,36 @@ public abstract class BaseUIFragment extends BaseFragment{
         cacheToastList.add(toast);
     }
 
-    protected void showPushFragmentForResult(BaseUIFragment<?> fragment, int request){
-        fragment.setAnimationType(AnimType.RIGHT_TO_LEFT);
+    protected void showPushFragmentForResult(BaseUIFragment fragment, int request){
+//        fragment.setAnimationType(AnimType.RIGHT_TO_LEFT);
         showFragmentForResult(fragment,request);
     }
-    protected void showPopFragmentForResult(BaseUIFragment<?> fragment,int request){
-        fragment.setAnimationType(AnimType.BOTTOM_TO_TOP);
+    protected void showPopFragmentForResult(BaseUIFragment fragment,int request){
+//        fragment.setAnimationType(AnimType.BOTTOM_TO_TOP);
         showFragmentForResult(fragment,request);
     }
-    protected void showFragmentForResult(BaseUIFragment<?> fragment,int requestId){
+    protected void OnFragmentResult(Bundle bundle,int request,int result){
+
+    }
+
+    protected void showFragmentForResult(BaseUIFragment fragment,int requestId){
         Bundle bundle=fragment.getArguments();
         if (bundle==null){
             bundle=new Bundle();
             bundle.putInt("requestId",requestId);
         }
         fragment.setArguments(bundle);
-
-        if (fragment instanceof MyBaseUIFragment){
-            ((MyBaseUIFragment)fragment).lastFragment=this;
-        }
+        mParentFragment=this;
         super.showFragment(fragment);
     }
 
-    protected void OnFragmentResult(Bundle bundle,int request,int result){
-
-    }
 
     public void setResult(Bundle bundle,int result){
         if (bundle==null){
             bundle=new Bundle();
         }
-        if (lastFragment!=null){
-            lastFragment.OnFragmentResult(bundle,requestId,result);
+        if (mParentFragment!=null){
+            mParentFragment.OnFragmentResult(bundle,requestId,result);
         }
     }
 }

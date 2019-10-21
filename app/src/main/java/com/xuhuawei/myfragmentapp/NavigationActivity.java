@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
-import com.xuhuawei.myfragmentapp.fragment.BaseFragment;
+import com.xuhuawei.myfragmentapp.base.BaseFragment;
 
 import java.util.List;
 
@@ -35,19 +35,14 @@ public class NavigationActivity extends FragmentActivity {
 
                 lastFragment.onNewIntent(intent);
             } else {
-                if (fragment != null && this.mLastFragment != null) {
-                    (fragment).setParent(this, this.mLastFragment);
-                }
-
                 this.mLastFragment = fragment;
                 FragmentTransaction transaction = this.getSupportFragmentManager().beginTransaction();
                 transaction.add(R.id.main_container, fragment);
                 transaction.commitAllowingStateLoss();
-//                if (lastFragment != null) {
-//                    lastFragment.setVisibleToUser(false);
-//                }
-//
-//                fragment.setVisibleToUser(true);
+                if (lastFragment != null) {
+                    lastFragment.setVisibleToUser(false);
+                }
+                fragment.setVisibleToUser(true);
             }
         }
     }
@@ -76,12 +71,12 @@ public class NavigationActivity extends FragmentActivity {
                     if (children.size() > 1) {
                         Fragment nextFragment = (Fragment)children.get(children.size() - 2);
                         if (nextFragment instanceof BaseFragment) {
-//                            ((BaseFragment)nextFragment).setVisibleToUser(true);
+                            ((BaseFragment)nextFragment).setVisibleToUser(true);
                             this.mLastFragment = (BaseFragment)nextFragment;
                         }
                     }
                 } else if (topFragment instanceof BaseFragment) {
-//                    ((BaseFragment)topFragment).setVisibleToUser(true);
+                    ((BaseFragment)topFragment).setVisibleToUser(true);
                     this.mLastFragment = (BaseFragment)topFragment;
                 }
             } else {
